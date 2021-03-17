@@ -74,7 +74,7 @@ def train(model, data_train, data_val, epochs, device, criterion, optimizer, sch
         model.eval()
         y_pred = []
         y_true = []
-        val_running_loss = 2
+        val_running_loss = 0
         with torch.no_grad():
             for batch in data_val:
                 input_ids = batch["input_ids"].to(device)
