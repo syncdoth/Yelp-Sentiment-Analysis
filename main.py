@@ -101,6 +101,7 @@ def train(model, data_train, data_val, epochs, device, criterion, optimizer, sch
             curr_best_val_acc = report["accuracy"]
             model_dir, name = save_path.rsplit("/", 1)
             name = f"acc{curr_best_val_acc}_{name}"
+            os.makedirs(model_dir, exist_ok=True)
             torch.save(model.state_dict(), os.path.join(model_dir, name))
 
 

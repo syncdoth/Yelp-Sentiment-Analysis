@@ -23,11 +23,9 @@ python main.py --data_path <data folder path>\
   --batch_size 16 \
   --max_len 256 \
   --epochs 5 \
-  --lr 0.00002 \
+  --lr 2e-5 \
   --dropout 0.2 \
   --save_path models/{}_bs{}_lr{}_drop{}.pth \
   --nouse_pooled
 ```
 
-* The code assumes that `models` folder is already created. If you haven't, run `mkdir models` 
-before calling above script.
