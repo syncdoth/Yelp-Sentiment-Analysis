@@ -89,6 +89,8 @@ class SentimentDataset(torch.utils.data.Dataset):
         return data
 
     def get_class_weights(self):
+        if self.mode == "test":
+            return None
         return compute_class_weight('balanced',
                                     classes=np.unique(self.stars),
                                     y=self.stars)

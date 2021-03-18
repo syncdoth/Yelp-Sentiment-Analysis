@@ -1,8 +1,9 @@
 from absl import flags
 from absl import app
+import pandas as pd
 import torch
 from tqdm import tqdm
-
+import numpy as np
 from model import SentimentAnalyzer
 from dataset import create_dataloader
 
@@ -40,12 +41,17 @@ def evaluate(model, test_data, device):
             predicted = torch.max(logits, dim=1)[1]
             preds.extend(predicted.tolist())
 
-    review_ids = test_data.data_file["review_id"]
-    save_preds(review_ids, preds)
+    review_ids = test_data.dataset.data_file["review_id"]
+    save_preds(review_ids, np.array(preds))
 
 
 def save_preds(review_ids, preds):
-    raise NotImplementedError
+    answer_df = pd.DataFrame(data={
+        'review_id': review_ids,
+        'stars': preds + 1,
+    })
+    answer_df.to_csv("31-test-preds.csv", index=False)
+
 
 
 def main(args):
