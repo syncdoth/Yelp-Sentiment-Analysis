@@ -3,3 +3,4 @@ __pycache__
 .ipynb_checkpoints/
 models/
 data_2021_spring/
+*.csv
