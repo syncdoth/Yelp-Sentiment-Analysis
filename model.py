@@ -4,6 +4,7 @@ from torch import nn
 
 
 class SentimentAnalyzer(nn.Module):
+
     def __init__(self,
                  model_name,
                  num_class=5,
