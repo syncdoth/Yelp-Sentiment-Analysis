@@ -28,6 +28,7 @@ def create_dataloader(root,
 
 
 class SentimentDataset(torch.utils.data.Dataset):
+
     def __init__(self,
                  root,
                  mode,
@@ -89,6 +90,8 @@ class SentimentDataset(torch.utils.data.Dataset):
         return data
 
     def get_class_weights(self):
+        if self.mode == "test":
+            return None
         return compute_class_weight('balanced',
                                     classes=np.unique(self.stars),
                                     y=self.stars)
