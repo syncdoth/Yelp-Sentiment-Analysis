@@ -19,7 +19,7 @@ Example train code would be:
 
 ```
 python main.py --data_path <data folder path> \
-  --model_name bert-base-cased \
+  --model_name robert-base \
   --batch_size 16 \
   --max_len 256 \
   --epochs 5 \
