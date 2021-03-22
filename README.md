@@ -5,7 +5,7 @@ HKUST COMP 4332 project1 - Spring 2021
 
 First, download the dataset from canvas, name the folder `data_2021_spring`, or just any name of your choice.
 
-Call the `main.py` script. This will run the experiments with the given parameters.
+Call the `main.py` script for train. This will run the experiments with the given parameters.
 
 To check all the parameters, type in your shell:
 
@@ -15,10 +15,10 @@ To check all the parameters, type in your shell:
 
 This will show the default parameters and explanations.
 
-Example run code would be:
+Example train code would be:
 
 ```
-python main.py --data_path <data folder path>\
+python main.py --data_path <data folder path> \
   --model_name bert-base-cased \
   --batch_size 16 \
   --max_len 256 \
@@ -29,3 +29,18 @@ python main.py --data_path <data folder path>\
   --nouse_pooled
 ```
 
+For evaluation, call `evaluate.py` script.
+
+* For validation set, it will generate a classification report.
+```
+python evaluate.py --data_path <data folder path> \
+  --model_path <saved model checkpoint path> \
+  --which_data valid
+```
+* For test set, it will generate a `pred.csv` file.
+```
+python evaluate.py --data_path <data folder path> \
+  --model_path <saved model checkpoint path> \
+  --which_data test \
+  --save_path preds/pred.csv
+```
