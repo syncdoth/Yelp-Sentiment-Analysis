@@ -53,6 +53,10 @@ class SentimentDataset(torch.utils.data.Dataset):
         self.tokenizer = tokenizer_base.from_pretrained(model_name)
         self.max_length = max_length
 
+        if len(columns) == 0:
+            self.other_features = None
+            return
+
         self.other_features = []
 
         # normalize other features to 0~1
@@ -85,8 +89,8 @@ class SentimentDataset(torch.utils.data.Dataset):
         if self.mode != "test":
             data["label"] = label
 
-        other_features = self.other_features[idx]
-        data["features"] = torch.FloatTensor(other_features)
+        if self.other_features is not None:
+            data["features"] = torch.FloatTensor(self.other_features[idx])
         return data
 
     def get_class_weights(self):

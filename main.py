@@ -1,3 +1,8 @@
+"""
+A lot of the codes are inspired from the following blog:
+https://curiousily.com/posts/sentiment-analysis-with-bert-and-hugging-face-using-pytorch-and-python/
+"""
+
 import os
 
 from absl import flags
@@ -8,7 +13,7 @@ from torch import nn
 from transformers import AdamW, get_linear_schedule_with_warmup
 from tqdm import tqdm
 
-from model import SentimentAnalyzer
+from model import TransformerSentimentAnalyzer
 from dataset import create_dataloader
 
 flags.DEFINE_string("data_path", "data_2021_spring", "data directory path")
@@ -45,7 +50,7 @@ def train(model, data_train, data_val, epochs, device, criterion, optimizer, sch
         for batch in train_bar:
             input_ids = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
-            other_features = batch["features"].to(device)
+            other_features = batch["features"].to(device) if "features" in batch else None
             label = batch["label"].to(device)
             step += 1
             logits = model(input_ids, attention_mask, other_features)
@@ -79,7 +84,7 @@ def train(model, data_train, data_val, epochs, device, criterion, optimizer, sch
             for batch in data_val:
                 input_ids = batch["input_ids"].to(device)
                 attention_mask = batch["attention_mask"].to(device)
-                other_features = batch["features"].to(device)
+                other_features = batch["features"].to(device) if "features" in batch else None
                 label = batch["label"].to(device)
 
                 logits = model(input_ids, attention_mask, other_features)
@@ -120,7 +125,7 @@ def main(args):
                                           max_length=FLAGS.max_len,
                                           columns=FLAGS.other_features)
 
-    model = SentimentAnalyzer(FLAGS.model_name,
+    model = TransformerSentimentAnalyzer(FLAGS.model_name,
                               num_class=5,
                               num_other_features=len(FLAGS.other_features),
                               dropout_rate=FLAGS.dropout,

@@ -3,7 +3,7 @@ import torch
 from torch import nn
 
 
-class SentimentAnalyzer(nn.Module):
+class TransformerSentimentAnalyzer(nn.Module):
 
     def __init__(self,
                  model_name,
@@ -25,10 +25,12 @@ class SentimentAnalyzer(nn.Module):
         if not self.use_pooled:
             self.hidden = nn.Linear(self.transformer.config.hidden_size,
                                     self.transformer.config.hidden_size)
-        self.fc1 = nn.Linear(num_other_features, hidden_size)
-        self.classifier = nn.Linear(self.transformer.config.hidden_size + hidden_size,
+        if num_other_features > 0:
+            self.fc1 = nn.Linear(num_other_features, hidden_size)
+            self.classifier = nn.Linear(self.transformer.config.hidden_size + hidden_size,
                                     num_class)
-
+        else:
+            self.classifier = nn.Linear(self.transformer.config.hidden_size, num_class)
         self.dropout = nn.Dropout(p=dropout_rate)
 
     def forward(self, input_ids, attention_mask, other_features):
@@ -40,8 +42,9 @@ class SentimentAnalyzer(nn.Module):
             cls_token = transformer_out["last_hidden_state"][:, 0]  # get the [CLS] token
             output = self.hidden(cls_token)
         dropped = self.dropout(output)  # [batch_size, 768]
-
-        feat = self.fc1(other_features)  # [batch_size, num_other_features]
-
-        final = torch.cat([dropped, feat], axis=1)
+        if hasattr(self, "fc1"):
+            feat = self.fc1(other_features)  # [batch_size, num_other_features]
+            final = torch.cat([dropped, feat], axis=1)
+        else:
+            final = dropped
         return self.classifier(final)

@@ -8,7 +8,7 @@ from tqdm import tqdm
 import numpy as np
 from sklearn.metrics import classification_report
 
-from model import SentimentAnalyzer
+from model import TransformerSentimentAnalyzer
 from dataset import create_dataloader
 
 flags.DEFINE_string("data_path", "data_2021_spring", "data directory path")
@@ -36,7 +36,7 @@ def evaluate(model, test_data, device, mode="test", save_name="pred.csv"):
         for batch in test_bar:
             input_ids = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
-            other_features = batch["features"].to(device)
+            other_features = batch["features"].to(device) if "features" in batch else None
             logits = model(input_ids, attention_mask, other_features)
             predicted = torch.max(logits, dim=1)[1]
             preds.extend(predicted.tolist())
@@ -74,7 +74,7 @@ def main(args):
                                            max_length=FLAGS.max_len,
                                            columns=FLAGS.other_features)
 
-    model = SentimentAnalyzer(model_name,
+    model = TransformerSentimentAnalyzer(model_name,
                               num_class=5,
                               num_other_features=len(FLAGS.other_features),
                               dropout_rate=dropout,
