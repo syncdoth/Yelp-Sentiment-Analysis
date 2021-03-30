@@ -25,9 +25,10 @@ flags.DEFINE_float("lr", 2e-5, "learning rate. Preferred 2e-5, 3e-5, 5e-5")
 flags.DEFINE_list("other_features", ["cool", "funny", "useful"],
                   "other feature aggregations to use")
 flags.DEFINE_float("dropout", 0.3, "dropout rate")
-flags.DEFINE_string("save_path", "models/{}_bs{}_lr{}_drop{}.pth",
+flags.DEFINE_string("save_path", "models/{}_bs{}_lr{}_drop{}_hidden{}.pth",
                     "where to save the model")
 flags.DEFINE_bool("use_pooled", True, "whether to use pooled output of Bert")
+flags.DEFINE_integer("other_hidden_dim", 10, "hidden dim for other features")
 
 FLAGS = flags.FLAGS
 #HP
@@ -42,7 +43,9 @@ def train(model, data_train, data_val, epochs, device, criterion, optimizer, sch
 
     for epoch in range(epochs):
         model.train()
-        train_bar = tqdm(data_train, total=int(len(data_train)))
+        train_bar = tqdm(data_train,
+                         total=int(len(data_train)),
+                         desc=f"train: {epoch + 1} / {epochs}")
 
         correct_num = 0
         total_num = 0
@@ -84,7 +87,8 @@ def train(model, data_train, data_val, epochs, device, criterion, optimizer, sch
             for batch in data_val:
                 input_ids = batch["input_ids"].to(device)
                 attention_mask = batch["attention_mask"].to(device)
-                other_features = batch["features"].to(device) if "features" in batch else None
+                other_features = batch["features"].to(
+                    device) if "features" in batch else None
                 label = batch["label"].to(device)
 
                 logits = model(input_ids, attention_mask, other_features)
@@ -100,12 +104,12 @@ def train(model, data_train, data_val, epochs, device, criterion, optimizer, sch
         report = classification_report(y_true, y_pred, output_dict=True)
         print(
             f"[valid] epoch: {epoch}, global step: {step}, loss: {val_running_loss / len(data_val)},"
-            f" report:\n{report}")
+            f" report:\n{classification_report(y_true, y_pred, digits=4)}")
 
         if report["accuracy"] > curr_best_val_acc:
             curr_best_val_acc = report["accuracy"]
             model_dir, name = save_path.rsplit("/", 1)
-            name = f"acc{curr_best_val_acc}_{name}"
+            # name = f"acc{curr_best_val_acc}_{name}"
             os.makedirs(model_dir, exist_ok=True)
             torch.save(model.state_dict(), os.path.join(model_dir, name))
 
@@ -126,10 +130,11 @@ def main(args):
                                           columns=FLAGS.other_features)
 
     model = TransformerSentimentAnalyzer(FLAGS.model_name,
-                              num_class=5,
-                              num_other_features=len(FLAGS.other_features),
-                              dropout_rate=FLAGS.dropout,
-                              use_pooled=FLAGS.use_pooled).to(DEVICE)
+                                         num_class=5,
+                                         num_other_features=len(FLAGS.other_features),
+                                         hidden_size=FLAGS.other_hidden_dim,
+                                         dropout_rate=FLAGS.dropout,
+                                         use_pooled=FLAGS.use_pooled).to(DEVICE)
 
     loss_fn = nn.CrossEntropyLoss(weight=torch.FloatTensor(class_weights).to(DEVICE))
     # loss_fn = nn.CrossEntropyLoss()
@@ -141,7 +146,7 @@ def main(args):
                                                 num_training_steps=total_steps)
 
     model_save_path = FLAGS.save_path.format(FLAGS.model_name, FLAGS.batch_size, FLAGS.lr,
-                                             FLAGS.dropout)
+                                             FLAGS.dropout, FLAGS.other_hidden_dim)
     train(model, train_dataloader, val_dataloader, FLAGS.epochs, DEVICE, loss_fn,
           bert_optim, scheduler, model_save_path)
 

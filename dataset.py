@@ -33,11 +33,13 @@ class SentimentDataset(torch.utils.data.Dataset):
                  root,
                  mode,
                  model_name,
+                 framework="pt",
                  max_length=256,
                  columns=["cool", "funny", "useful"]):
         self.root = root
         self.mode = mode
         self.data_file = pd.read_csv(os.path.join(self.root, f"{self.mode}.csv"))
+        self.framework = framework
 
         self.review_texts = self.data_file["text"].to_list()
         if mode != "test":
@@ -79,7 +81,7 @@ class SentimentDataset(torch.utils.data.Dataset):
                                              return_token_type_ids=False,
                                              padding='max_length',
                                              return_attention_mask=True,
-                                             return_tensors='pt',
+                                             return_tensors=self.framework,
                                              truncation=True)
 
         data = {

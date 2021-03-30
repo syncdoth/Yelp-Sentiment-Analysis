@@ -44,7 +44,7 @@ def evaluate(model, test_data, device, mode="test", save_name="pred.csv"):
                 y_true.extend(batch["label"].tolist())
 
     if mode == "valid":
-        print(classification_report(y_true, preds))
+        print(classification_report(y_true, preds, digits=4))
     else:
         review_ids = test_data.dataset.data_file["review_id"]
         save_preds(review_ids, np.array(preds), save_name)
@@ -63,9 +63,10 @@ def main(args):
 
     ckpt_name = os.path.basename(FLAGS.model_path)
     ckpt_name = ckpt_name.rsplit(".", 1)[0]
-    _, model_name, batch_size, _, dropout = ckpt_name.split("_")
+    _, model_name, batch_size, _, dropout, hidden = ckpt_name.split("_")
     batch_size = int(batch_size[2:])
     dropout = float(dropout[4:])
+    hidden = int(hidden[6:])
 
     test_dataloader, _ = create_dataloader(FLAGS.data_path,
                                            FLAGS.which_data,
@@ -75,10 +76,11 @@ def main(args):
                                            columns=FLAGS.other_features)
 
     model = TransformerSentimentAnalyzer(model_name,
-                              num_class=5,
-                              num_other_features=len(FLAGS.other_features),
-                              dropout_rate=dropout,
-                              use_pooled=FLAGS.use_pooled).to(DEVICE)
+                                         num_class=5,
+                                         num_other_features=len(FLAGS.other_features),
+                                         hidden_size=hidden,
+                                         dropout_rate=dropout,
+                                         use_pooled=FLAGS.use_pooled).to(DEVICE)
     model.load_state_dict(torch.load(FLAGS.model_path))
     model.eval()
 
