@@ -6,7 +6,7 @@ from tensorflow import keras
 import os
 import pickle
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1,2"
 
 train_dataset = SentimentDataset("new_data",
                                  "train",
@@ -27,7 +27,7 @@ lstm_model = get_lstm_model(train_dataset.tokenizer.vocab_size,
                             max_seq_len=256,
                             embed_dim=1024,
                             hidden_size=128,
-                            other_size=10,
+                            other_size=32,
                             dropout_rate=0.3)
 
 lstm_model.compile(
@@ -47,12 +47,14 @@ val_data = [
 ]
 val_label = tf.concat([data["label"] for data in val_dataset], axis=0)
 
+class_weight = {i: weight for i, weight in enumerate(train_dataset.get_class_weights())}
 history = lstm_model.fit(train_data,
                          train_label,
                          validation_data=(val_data, val_label),
                          batch_size=16,
-                         epochs=10)
+                         epochs=10,
+                         class_weight=class_weight)
 
-lstm_model.save("models/lstm+cnn_model_other10_hidden256.h5")
-with open("models/lstm+cnn_history_other10_hidden256.pickle", "wb") as f:
+lstm_model.save("models/lstm+cnn_model_other32_hidden128.h5")
+with open("models/lstm+cnn_history_other32_hidden128.pickle", "wb") as f:
     pickle.dump(history, f, protocol=pickle.HIGHEST_PROTOCOL)

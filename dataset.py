@@ -59,13 +59,9 @@ class SentimentDataset(torch.utils.data.Dataset):
             self.other_features = None
             return
 
-        self.other_features = []
-
         # normalize other features to 0~1
-        for key in self.data_file[columns]:
-            self.other_features.append(MinMaxScaler().fit_transform(
-                self.data_file[columns][key].to_numpy().reshape(-1, 1)))
-        self.other_features = np.concatenate(self.other_features, 1)
+        self.other_features = MinMaxScaler().fit_transform(
+            self.data_file[columns].to_numpy())
 
     def __len__(self):
         return len(self.review_texts)
