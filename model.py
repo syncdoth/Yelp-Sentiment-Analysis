@@ -62,29 +62,36 @@ def get_lstm_model(vocab_size,
                    num_other_features=3,
                    max_seq_len=256,
                    embed_dim=256,
+                   embed_weight=None,
                    hidden_size=256,
                    other_size=10,
                    dropout_rate=0.3):
     """Tensorflow lstm-cnn model"""
     x = keras.Input((max_seq_len,))
-    emb = keras.layers.Embedding(input_dim=vocab_size,
-                                 output_dim=embed_dim)(x)  # [batch, T, E]
-    output = keras.layers.Bidirectional(
+    if embed_weight is not None:
+        emb = keras.layers.Embedding(input_dim=vocab_size,
+                                     output_dim=embed_dim,
+                                     weights=[embed_weight])(x)  # [batch, T, E]
+    else:
+        emb = keras.layers.Embedding(input_dim=vocab_size, output_dim=embed_dim)(x)
+    output1 = keras.layers.Bidirectional(
         keras.layers.LSTM(hidden_size, return_sequences=True,
                           dropout=dropout_rate))(emb)  # [batch, T, H * 2]
+    output = tf.concat([output1, emb], 2)
+
     output = keras.layers.Conv1D(hidden_size,
-                                 2,
-                                 input_shape=output.shape[1:],
+                                 kernel_size=2,
+                                 kernel_initializer='he_uniform',
                                  activation="relu")(output)
-    output = tf.keras.layers.MaxPooling1D(pool_size=output.shape[1])(output)
-    output = keras.layers.Flatten()(output)
-    output = keras.layers.Dropout(rate=dropout_rate)(output)
+    output = keras.layers.GlobalMaxPooling1D()(output)
+    output = keras.layers.Dropout(dropout_rate)(output)
 
     if num_other_features > 0:
         other = keras.Input((num_other_features,))
         other_feat = keras.layers.Dense(other_size, activation="relu")(other)
         output = tf.concat([output, other_feat], 1)
 
+    # FCs
     output = keras.layers.Dense(num_class, activation=None)(output)
 
     if num_other_features > 0:

@@ -6,6 +6,9 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils.class_weight import compute_class_weight
 import torch
 from transformers import BertTokenizer, RobertaTokenizer, XLNetTokenizer
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from preprocess import *
 
 
 def create_dataloader(root,
@@ -35,25 +38,39 @@ class SentimentDataset(torch.utils.data.Dataset):
                  model_name,
                  framework="pt",
                  max_length=256,
-                 columns=["cool", "funny", "useful"]):
+                 columns=["cool", "funny", "useful"],
+                 keras_tokenizer=None):
         self.root = root
         self.mode = mode
         self.data_file = pd.read_csv(os.path.join(self.root, f"{self.mode}.csv"))
         self.framework = framework
 
-        self.review_texts = self.data_file["text"].to_list()
+        self.review_texts = None
+        if model_name == "lstm-cnn":
+            self.review_texts = self.data_file["text"].map(lower).map(tokenize).map(stem)
+            if mode != "train":
+                assert keras_tokenizer is not None
+                self.tokenizer = keras_tokenizer
+            else:
+                self.tokenizer = Tokenizer(split=' ', oov_token="[OOV]")
+                self.tokenizer.fit_on_texts(self.review_texts)
+        else:
+            if "roberta" in model_name:
+                tokenizer_base = RobertaTokenizer
+            elif "bert" in model_name:
+                tokenizer_base = BertTokenizer
+            elif "xlnet" in model_name:
+                tokenizer_base = XLNetTokenizer
+            else:
+                raise NotImplementedError
+            self.tokenizer = tokenizer_base.from_pretrained(model_name)
+        self.max_length = max_length
+
+        if self.review_texts is None:
+            self.review_texts = self.data_file["text"].to_list()
         if mode != "test":
             self.stars = self.data_file["stars"].to_numpy()
             self.stars -= 1  # 1~5 -> 0~4
-
-        if "roberta" in model_name:
-            tokenizer_base = RobertaTokenizer
-        elif "bert" in model_name:
-            tokenizer_base = BertTokenizer
-        elif "xlnet" in model_name:
-            tokenizer_base = XLNetTokenizer
-        self.tokenizer = tokenizer_base.from_pretrained(model_name)
-        self.max_length = max_length
 
         if len(columns) == 0:
             self.other_features = None
@@ -97,3 +114,9 @@ class SentimentDataset(torch.utils.data.Dataset):
         return compute_class_weight('balanced',
                                     classes=np.unique(self.stars),
                                     y=self.stars)
+
+    def get_keras_data(self):
+        data = self.tokenizer.texts_to_sequences(self.review_texts)
+        data = [pad_sequences(data, maxlen=self.max_length), self.other_features]
+
+        return data, self.stars
