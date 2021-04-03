@@ -1,5 +1,5 @@
 # Yelp-Sentiment-Analysis
-HKUST COMP 4332 project1 - Spring 2021 
+HKUST COMP 4332 project1 - Spring 2021
 
 ## Usage
 
@@ -44,3 +44,7 @@ python evaluate.py --data_path <data folder path> \
   --which_data test \
   --save_path preds/pred.csv
 ```
+
+## Keras LSTM (+CNN) model
+
+LSTM models are implemented in keras, and run through `lstm_train.py` file.
