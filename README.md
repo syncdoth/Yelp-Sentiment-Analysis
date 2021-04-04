@@ -70,3 +70,7 @@ LSTM models are implemented in keras, and run through `lstm_train.py` file.
 python lstm_train.py
 ```
 * Hyperparameters needs to be tuned manually within the file.
+* You can decide to use pretrained embedding from
+[glove](https://nlp.stanford.edu/projects/glove/). Download the desired embedding
+file and change line 31 of `lstm_train.py` to the path of the glove embedding
+file.
