@@ -125,6 +125,7 @@ def main(args):
     val_dataloader, _ = create_dataloader(FLAGS.data_path,
                                           "valid",
                                           FLAGS.model_name,
+                                          tokenizer=train_dataloader.dataset.tokenizer,
                                           batch_size=FLAGS.batch_size,
                                           max_length=FLAGS.max_len,
                                           columns=FLAGS.other_features)

@@ -1,0 +1,8 @@
+tqdm
+torch>=1.7.0
+transformers==4.4.0
+tensorflow-gpu>=2.0.0
+nltk
+scikit-learn
+absl
+pandas

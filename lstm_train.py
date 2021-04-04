@@ -23,7 +23,7 @@ val_dataset = SentimentDataset("new_data",
                                max_length=512,
                                columns=["cool", "funny", "useful"],
                                framework="tf",
-                               keras_tokenizer=train_dataset.tokenizer)
+                               tokenizer=train_dataset.tokenizer)
 
 train_data, train_label = train_dataset.get_keras_data()
 val_data, val_label = val_dataset.get_keras_data()
