@@ -14,21 +14,19 @@ from preprocess import *
 def create_dataloader(root,
                       mode,
                       model_name,
-                      tokenizer=None,
                       batch_size=32,
                       max_length=256,
                       columns=["cool", "funny", "useful"]):
     review_ds = SentimentDataset(root,
                                  mode,
                                  model_name,
-                                 tokenizer=tokenizer,
                                  max_length=max_length,
                                  columns=columns)
 
     # shuffle the dataset if it is not test dataset
     dataloader = torch.utils.data.DataLoader(review_ds,
                                              batch_size=batch_size,
-                                             shuffle=mode != "test")
+                                             shuffle=mode == "train")
 
     class_weights = review_ds.get_class_weights()
 
@@ -69,12 +67,7 @@ class SentimentDataset(torch.utils.data.Dataset):
                 tokenizer_base = XLNetTokenizer
             else:
                 raise NotImplementedError
-            if mode != "train":
-                assert tokenizer is not None
-                assert isinstance(tokenizer, tokenizer_base)
-                self.tokenizer = tokenizer
-            else:
-                self.tokenizer = tokenizer_base.from_pretrained(model_name)
+            self.tokenizer = tokenizer_base.from_pretrained(model_name)
         self.max_length = max_length
 
         if self.review_texts is None:
