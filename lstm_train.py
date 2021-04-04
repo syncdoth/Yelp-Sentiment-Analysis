@@ -9,15 +9,15 @@ import pickle
 import numpy as np
 from preprocess import get_pretrained_embedding
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,3"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,3"  # select gpu
 
-train_dataset = SentimentDataset("new_data",
+train_dataset = SentimentDataset("data_2021_spring",
                                  "train",
                                  "lstm-cnn",
                                  max_length=512,
                                  columns=["cool", "funny", "useful"],
                                  framework="tf")
-val_dataset = SentimentDataset("new_data",
+val_dataset = SentimentDataset("data_2021_spring",
                                "valid",
                                "lstm-cnn",
                                max_length=512,

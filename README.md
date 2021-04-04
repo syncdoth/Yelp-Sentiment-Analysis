@@ -74,3 +74,5 @@ python lstm_train.py
 [glove](https://nlp.stanford.edu/projects/glove/). Download the desired embedding
 file and change line 31 of `lstm_train.py` to the path of the glove embedding
 file.
+* since this model proved to be suboptimal, no inference code was written for this
+model.
