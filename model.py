@@ -27,16 +27,16 @@ class TransformerSentimentAnalyzer(nn.Module):
         if not self.use_pooled:
             self.hidden = nn.Linear(self.transformer.config.hidden_size,
                                     self.transformer.config.hidden_size)
-            nn.init.xavier_uniform(self.hidden.weight)
+            nn.init.xavier_uniform_(self.hidden.weight, gain=nn.init.calculate_gain('relu'))
         if num_other_features > 0:
             self.fc1 = nn.Linear(num_other_features, hidden_size)
-            nn.init.xavier_uniform(self.fc1.weight)
+            nn.init.xavier_uniform_(self.fc1.weight, gain=nn.init.calculate_gain('relu'))
             self.other_relu = nn.ReLU()
             self.classifier = nn.Linear(self.transformer.config.hidden_size + hidden_size,
                                         num_class)
         else:
             self.classifier = nn.Linear(self.transformer.config.hidden_size, num_class)
-        nn.init.xavier_uniform(self.classifier.weight)
+        nn.init.xavier_uniform_(self.classifier.weight)
         self.dropout = nn.Dropout(p=dropout_rate)
 
     def forward(self, input_ids, attention_mask, other_features):
