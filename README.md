@@ -34,13 +34,13 @@ python main.py --data_path <data folder path> \
   --batch_size 16 \
   --max_len 256 \
   --epochs 8 \
-  --lr 2e-5 \
-  --dropout 0.3 \
+  --lr 1e-5 \
+  --dropout 0.4 \
   --save_path models/{}_bs{}_lr{}_drop{}_hidden{}.pth \
   --use_pooled \
   --other_hidden_dim 32
 ```
-* Above HP will achieve about 0.67 validation accuracy.
+* Above HP will achieve about 0.68 validation accuracy.
 * Notice that our implementation makes use of Bert or Roberta model implemented
 in [hugginface](https://huggingface.co/transformers/index.html)'s `transformer`
 package. They will install some pretrained model weights to
